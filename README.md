@@ -154,6 +154,40 @@ You can either install the app manually or use Docker to quickly set it up and r
 
 ---
 
+Here’s a simplified and clean version for your README file:
+
+---
+
+### Data Storage in MongoDB
+
+The data is stored in MongoDB in the following format:
+
+```json
+{
+  "_id": {
+    "$oid": "6773c22d8323571b4b4d6194"
+  },
+  "session_id": "b9b8f8c1-e653-4bfa-a6b1-77f5875e2910",
+  "query": "hello again.",
+  "response": "Hello once more! It’s nice to see you back. How can I assist you today?",
+  "context": "Brief context or additional information related to the session.",
+  "timestamp": {
+    "$date": "2024-12-31T10:06:37.187Z"
+  },
+  "duration": 2.72
+}
+```
+
+- **`_id`**: Unique identifier for the document.
+- **`session_id`**: Unique identifier for the user session.
+- **`query`**: User's input or query.
+- **`response`**: AI's response to the user's query.
+- **`context`**: Relevant context or additional information tied to the session.
+- **`timestamp`**: Time when the interaction occurred.
+- **`duration`**: Time taken (in seconds) to process the query.
+
+---
+
 ## Technologies Used
 
 - **FastAPI**: Backend framework.
