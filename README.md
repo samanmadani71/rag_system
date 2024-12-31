@@ -60,3 +60,17 @@ This is a Retrieval-Augmented Generation (RAG) API that uses a Large Language Mo
    ```
    http://127.0.0.1:8000/docs
    ```
+
+### Using Docker
+
+1. Build and run the application using Docker Compose:
+
+   ```
+   docker-compose build
+   docker-compose up
+   ```
+
+2. Access the application at:
+   ```
+   http://localhost:8000/docs
+   ```
