@@ -154,10 +154,6 @@ You can either install the app manually or use Docker to quickly set it up and r
 
 ---
 
-Here’s a simplified and clean version for your README file:
-
----
-
 ### Data Storage in MongoDB
 
 The data is stored in MongoDB in the following format:
