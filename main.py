@@ -19,7 +19,7 @@ import getpass
 from bson.objectid import ObjectId  # For handling the _id field
 import json
 from langchain_core.prompts import PromptTemplate
-
+import asyncio
 
 
 embedding_model = OpenAIEmbeddings(model='text-embedding-3-small')
@@ -173,10 +173,12 @@ async def query_answering(request:Request,response:Response,query:Query):
     
     session_id = get_or_create_session_id(request,response)
 
+    # get only the last record for the user uploads file
     cursor = collection.find({'session_id':session_id},{'_id':0,'index_path':1,'chunks_path':1}).sort('uploaded_at',-1).limit(1)
 
     record = await cursor.to_list(length=1)
 
+    # Create context and retrieve the most relevant information from the documentations
     main_context=''
     if record:
         record = record[0]
@@ -200,8 +202,35 @@ async def query_answering(request:Request,response:Response,query:Query):
 
     response = chain.invoke({'context':main_context,'query':query})
 
+    # log the response and the data in the database in the chat collection.
     await chat_collection.insert_one({'session_id':session_id,'query':query,'response':response.content,'context':main_context,'timestamp':datetime.datetime.now(timezone.utc),'duration':time.time()-start_time})
-    return {'answer':response}
+    
+    response_payload = {'answer':response.content}
+    
+    # to update and reindex in the background
+    asyncio.create_task(update_index(index_path,chunks_path,response.content))
+    return response_payload
+
+
+async def update_index(index_path,chunks_path,response_content):
+    if not index_path or not chunks_path:
+        return
+    # reading
+    index = faiss.read_index(index_path)
+    all_chunks =[]
+    with open(chunks_path,'r') as chunk_file:
+        all_chunks.extend(json.load(chunk_file))
+    
+    # updating
+    response_embedding = embedding_model.embed_query(response_content)
+    index.add(np.array([response_embedding]).astype('float32'))
+    all_chunks.append(response_content)
+    
+    # saving
+    with open(chunks_path,'w') as chunk_file:
+        json.dump(all_chunks,chunk_file)
+    faiss.write_index(index,index_path)
+
 
 @app.get('/logs')
 def get_logs():
