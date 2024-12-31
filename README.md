@@ -176,7 +176,7 @@ You can either install the app manually or use Docker to quickly set it up and r
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project has no license. Enjoy :-)
 
 ---
 
