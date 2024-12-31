@@ -25,6 +25,8 @@ This is a Retrieval-Augmented Generation (RAG) API that uses a Large Language Mo
 
 ### Installation
 
+You can either install the app manually or use Docker to quickly set it up and run.
+
 1. Clone the repository:
 
    ```bash
