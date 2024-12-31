@@ -176,42 +176,32 @@ async def query_answering(request:Request,response:Response,query:Query):
     cursor = collection.find({'session_id':session_id},{'_id':0,'index_path':1,'chunks_path':1}).sort('uploaded_at',-1).limit(1)
 
     record = await cursor.to_list(length=1)
-    print(record)
+
+    main_context=''
     if record:
         record = record[0]
-
-    
-    index_path = record.get('index_path')
-    docs_chunks = []
-    # async for record in cursor:
-    #     print(record)
-        # if "index_path" in record:
-        #     index_paths.append(record["index_path"])
-
-    #     all_chunks = []
-    #     chunks_path = record['chunks_path']
-    #     with open(chunks_path, 'r') as chunk_file:
-    #         all_chunks.extend(json.load(chunk_file))
-    #     docs_chunks.append(all_chunks)
-
-    # query = query.query
-    # query_embedding = embedding_model.embed_query(query) 
-    
-    # file_indices = [faiss.read_index(index_path) for index_path in index_paths]
-    # main_context = ''
-    # k=2
-    # for counter,index in enumerate(file_indices):
-    #     distances,indices = index.search(np.array([query_embedding]).astype('float32'),k)
-    #     relevant_chunks = [docs_chunks[counter][i] for i in indices[0]]
-    #     context = '\n'.join(relevant_chunks)
-    #     main_context+=context
-
-    # response = chain.invoke({'context':main_context,'query':query})
-
-    # await chat_collection.insert_one({'session_id':session_id,'query':query,'response':response.content,'context':main_context,'timestamp':datetime.datetime.now(timezone.utc),'duration':time.time()-start_time})
+        index_path = record.get('index_path')
+        chunks_path = record.get('chunks_path')
 
 
-    return {'answer':'response'}
+        all_chunks = []
+        with open(chunks_path, 'r') as chunk_file:
+            all_chunks.extend(json.load(chunk_file))
+
+        query = query.query
+        query_embedding = embedding_model.embed_query(query) 
+        
+        index = faiss.read_index(index_path)
+        k=2
+        distances,indices = index.search(np.array([query_embedding]).astype('float32'),k)
+        relevant_chunks = [all_chunks[i] for i in indices[0]]
+        context = '\n'.join(relevant_chunks)
+        main_context+=context
+
+    response = chain.invoke({'context':main_context,'query':query})
+
+    await chat_collection.insert_one({'session_id':session_id,'query':query,'response':response.content,'context':main_context,'timestamp':datetime.datetime.now(timezone.utc),'duration':time.time()-start_time})
+    return {'answer':response}
 
 @app.get('/logs')
 def get_logs():
