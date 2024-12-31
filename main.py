@@ -20,6 +20,7 @@ from bson.objectid import ObjectId  # For handling the _id field
 import json
 from langchain_core.prompts import PromptTemplate
 import asyncio
+from langchain_core.messages import (AIMessage,HumanMessage,SystemMessage,trim_messages)
 
 
 embedding_model = OpenAIEmbeddings(model='text-embedding-3-small')
@@ -47,9 +48,9 @@ chat_collection = db['chats']
 
 llm = ChatOpenAI(model='gpt-4o-mini')
 
-prompt = PromptTemplate.from_template('context: {context}\nquery: {query}\n')
+# prompt = PromptTemplate.from_template('context: {context}\nquery: {query}\n')
 
-chain  = prompt | llm 
+# chain  = prompt | llm 
 
 
 
@@ -173,7 +174,7 @@ async def query_answering(request:Request,response:Response,query:Query):
     
     session_id = get_or_create_session_id(request,response)
 
-    # get only the last record for the user uploads file
+    # Retrieve only the most recent record of user-uploaded files, meaning the documents uploaded by the user during their latest upload
     cursor = collection.find({'session_id':session_id},{'_id':0,'index_path':1,'chunks_path':1}).sort('uploaded_at',-1).limit(1)
 
     record = await cursor.to_list(length=1)
@@ -200,38 +201,69 @@ async def query_answering(request:Request,response:Response,query:Query):
         context = '\n'.join(relevant_chunks)
         main_context+=context
 
-    response = chain.invoke({'context':main_context,'query':query})
+
+    history_messages = await get_message_histories(session_id)
+
+    messages = [SystemMessage(f'based on this context, response to my query: \n {main_context}')]
+    AI_freindly_message = convert_history_to_AI_freindly_message(history_messages)
+    messages.extend(AI_freindly_message)
+    messages.append(HumanMessage(query))
+
+    # trim the messages to the last 5 messages
+    trimmed_messages = trim_messages(messages,max_tokens=5,strategy='last',include_system=True,token_counter=len,start_on='human') 
+    response = llm.invoke(trimmed_messages)
 
     # log the response and the data in the database in the chat collection.
     await chat_collection.insert_one({'session_id':session_id,'query':query,'response':response.content,'context':main_context,'timestamp':datetime.datetime.now(timezone.utc),'duration':time.time()-start_time})
     
     response_payload = {'answer':response.content}
     
-    # to update and reindex in the background
-    asyncio.create_task(update_index(index_path,chunks_path,response.content))
+
     return response_payload
 
 
-async def update_index(index_path,chunks_path,response_content):
-    if not index_path or not chunks_path:
-        return
-    # reading
-    index = faiss.read_index(index_path)
-    all_chunks =[]
-    with open(chunks_path,'r') as chunk_file:
-        all_chunks.extend(json.load(chunk_file))
+
+class ChatLog(BaseModel):
+    query:str
+    response:str
+    context:str
+    timestamp:str
+    duration:float
+
+async def get_message_histories(session_id:str):
+    cursor = chat_collection.find({'session_id':session_id}).sort('timestamp',1) # to make sure the last messages retrived last
+    logs = await cursor.to_list(length=None)
+    chat_logs = [ChatLog(
+        query=log['query'],
+        response=log['response'],
+        context=log['context'],
+        timestamp=log['timestamp'].isoformat(),
+        duration=log['duration']
+    ) for log in logs]
+    return chat_logs
+
+@app.get('/logs',response_model=List[ChatLog])
+async def get_logs(request:Request,response:Response):
+    """
+    This is a doc string of the get_logs function
+    """
+    session_id = get_or_create_session_id(request,response)
+    session_id='6c250bc6-d94f-4560-a6a5-9ef84917a8e0'
+    try:
+        chat_logs = await get_message_histories(session_id)
+        return chat_logs
     
-    # updating
-    response_embedding = embedding_model.embed_query(response_content)
-    index.add(np.array([response_embedding]).astype('float32'))
-    all_chunks.append(response_content)
-    
-    # saving
-    with open(chunks_path,'w') as chunk_file:
-        json.dump(all_chunks,chunk_file)
-    faiss.write_index(index,index_path)
+
+    except Exception as e:
+        raise HTTPException(status_code=400,detail=f'{str(e)}')
 
 
-@app.get('/logs')
-def get_logs():
-    return {'logs':'a history of logs'}
+
+def convert_history_to_AI_freindly_message(history_messages):
+    AI_freindly_message = []
+    for message in history_messages:
+        if message.query:
+            AI_freindly_message.append(HumanMessage(message.query))
+        if message.response:
+            AI_freindly_message.append(AIMessage(message.response))
+    return AI_freindly_message
