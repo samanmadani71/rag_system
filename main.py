@@ -8,7 +8,6 @@ import datetime
 from datetime import timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 from uuid import uuid4
-import redis
 import os
 import time
 from .lib.utils import parse_pdf,chunk_text
@@ -18,27 +17,12 @@ import numpy as np
 import getpass
 from bson.objectid import ObjectId  # For handling the _id field
 import json
-from langchain_core.prompts import PromptTemplate
-import asyncio
 from langchain_core.messages import (AIMessage,HumanMessage,SystemMessage,trim_messages)
 
 
 embedding_model = OpenAIEmbeddings(model='text-embedding-3-small')
 
 app = FastAPI()
-
-
-REDIS_HOST = '45.41.206.68'
-REDIS_PORT = 6379
-REDIS_PASSWORD = 'samanmadani'
-
-
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASSWORD,
-    decode_responses=True  # Decodes byte responses to strings
-)
 
 client = AsyncIOMotorClient('mongodb://localhost:27017')
 db = client['rag']
