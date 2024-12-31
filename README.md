@@ -184,18 +184,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions or feedback, please contact:
 
-- **Name**: [Your Name]
-- **Email**: your.email@example.com
-- **GitHub**: [Your GitHub Profile](https://github.com/your-username)
-
-```
-
----
-
-### Customize It for Your Project
-
-- Replace placeholders like `your_openai_api_key_here`, `your-username`, and `your-repo-name` with actual details.
-- Include links to additional resources like API documentation or a live demo if available.
-- If applicable, add sections for FAQs or known issues.
-
-```
+- **Name**: Saman Madani
+- **Email**: SamanMadani.dev@gmail.com
+- **Website**: [My Personal Website](https://samanmadani.ir)
