@@ -1,4 +1,7 @@
 *.pdf
 *.json
 *.bin
+.env
 *.env
+
+uploaded_files/
