@@ -63,7 +63,7 @@ You can either install the app manually or use Docker to quickly set it up and r
    http://127.0.0.1:8000/docs
    ```
 
-### Using Docker
+#### Using Docker
 
 1. Build and run the application using Docker Compose:
 
@@ -76,3 +76,126 @@ You can either install the app manually or use Docker to quickly set it up and r
    ```
    http://localhost:8000/docs
    ```
+
+---
+
+## Endpoints
+
+### **File Upload**
+
+- **URL**: `/upload`
+- **Method**: `POST`
+- **Description**: Upload and index a PDF document.
+- **Request Body**:
+  - `files`: List of PDF files.
+- **Response**:
+  ```json
+  {
+    "uploaded_files": [
+      {
+        "file_id": "63e8b2f1",
+        "filenames": ["example.pdf"],
+        "content_type": "application/pdf",
+        "files_path": ["uploaded_files/example.pdf"],
+        "index_path": "index/example.bin"
+      }
+    ]
+  }
+  ```
+
+### **Query Answering**
+
+- **URL**: `/query`
+- **Method**: `POST`
+- **Description**: Retrieve answers based on indexed data.
+- **Request Body**:
+  - `query`: The user query.
+- **Response**:
+  ```json
+  {
+    "answer": "AI-generated response based on the context."
+  }
+  ```
+
+### **Chat Logs**
+
+- **URL**: `/logs`
+- **Method**: `GET`
+- **Description**: Retrieve chat logs for the current session.
+- **Response**:
+  ```json
+  [
+    {
+      "query": "What is AI?",
+      "response": "AI is artificial intelligence.",
+      "context": "Context retrieved from documents.",
+      "timestamp": "2023-01-01T12:00:00Z",
+      "duration": 0.2
+    }
+  ]
+  ```
+
+---
+
+## Project Structure
+
+```plaintext
+.
+├── main.py                # Application entry point
+├── lib/
+│   ├── utils.py           # Helper functions for PDF parsing and text processing
+│   └── __init__.py        # Package initialization
+├── requirements.txt       # Python dependencies
+├── Dockerfile             # Docker setup
+├── docker-compose.yml     # Docker Compose configuration
+├── uploaded_files/        # Directory for uploaded files (Docker volume)
+└── README.md              # Project documentation
+```
+
+---
+
+## Technologies Used
+
+- **FastAPI**: Backend framework.
+- **MongoDB**: Database for storing metadata and chat logs.
+- **LangChain**: Framework for managing and querying indexed embeddings.
+- **FAISS**: Library for efficient similarity search.
+- **Docker**: Containerization for consistent deployment.
+
+---
+
+## Contributing
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add your feature'`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Contact
+
+For questions or feedback, please contact:
+
+- **Name**: [Your Name]
+- **Email**: your.email@example.com
+- **GitHub**: [Your GitHub Profile](https://github.com/your-username)
+
+```
+
+---
+
+### Customize It for Your Project
+
+- Replace placeholders like `your_openai_api_key_here`, `your-username`, and `your-repo-name` with actual details.
+- Include links to additional resources like API documentation or a live demo if available.
+- If applicable, add sections for FAQs or known issues.
+
+```
