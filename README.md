@@ -38,14 +38,15 @@ This is a Retrieval-Augmented Generation (RAG) API that uses a Large Language Mo
    ```
 3. Install dependencies:
 
-   ```pip install -r requirements.txt
-
+   ```
+   pip install -r requirements.txt
    ```
 
 4. Create an .env file and add your environment variables:
 
-   ```OPENAI_API_KEY=your_openai_api_key_here
-       MONGO_URI=mongodb://localhost:27017/rag
+   ```
+    OPENAI_API_KEY=your_openai_api_key_here
+    MONGO_URI=mongodb://localhost:27017/rag
    ```
 
 5. Run the application:
@@ -55,6 +56,7 @@ This is a Retrieval-Augmented Generation (RAG) API that uses a Large Language Mo
    ```
 
 6. Open your browser and navigate to:
-   ```http://127.0.0.1:8000/docs
 
+   ```
+   http://127.0.0.1:8000/docs
    ```
